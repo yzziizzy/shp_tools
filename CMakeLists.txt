@@ -26,11 +26,20 @@ target_link_libraries(unpackimg PUBLIC
 
 
 
-add_executable(tredump src/TREdump.cpp)
+add_executable(tredump src/TREdump.cpp src/TRE.cpp src/common.cpp src/bitstream.cpp)
 
 target_compile_options(tredump PUBLIC -std=c++11 )
 
 target_link_libraries(tredump PUBLIC
+  m
+)
+
+
+add_executable(rgndump src/RGNdump.cpp src/RGN.cpp src/TRE.cpp src/common.cpp src/bitstream.cpp)
+
+target_compile_options(rgndump PUBLIC -std=c++11 )
+
+target_link_libraries(rgndump PUBLIC
   m
 )
 

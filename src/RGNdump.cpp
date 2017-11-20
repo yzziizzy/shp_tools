@@ -7,7 +7,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include "TRE.h"
+#include "RGN.h"
 
 
 
@@ -17,7 +17,7 @@
 
 
 int main(int argc, char* argv[]) {
-	TREFile tre;
+	RGNFile rgn;
 	char dump = 0;
 	
 	for(int i = 1; i < argc; i++) {
@@ -26,7 +26,7 @@ int main(int argc, char* argv[]) {
 				// long form
 				// -x --dexor
 				
-				
+
 			}
 			else { // short form
 				
@@ -35,7 +35,7 @@ int main(int argc, char* argv[]) {
 		else { // a file
 			string s = argv[i];
 			
-			tre.LoadPath(&s);
+			rgn.LoadPath(&s);
 			
 		}
 	}

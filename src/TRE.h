@@ -1,23 +1,14 @@
+#pragma once
 
 #include <string>
 #include <map>
 #include <vector>
 
+#include "common.h"
+
 using namespace std;
 
 
-class MapCoord {
-public:
-	int32_t n;
-	double d;
-	
-	int sourceBits; 
-	bool isSigned;
-	
-	void read24(uint8_t* data);
-	void readN(uint8_t* data, int offsetBits, int dataBits, bool isSigned);
-	void fromN(uint32_t raw, int offsetBits, int dataBits, bool isSigned);
-};
 
 
 class TREMapLevel {
@@ -51,11 +42,23 @@ public:
 	TRESubdivision(uint8_t* data, bool isLowest);
 };
 
+class TREPrimOverview {
+public:
+	int type;
+	int maxLevelPresent;
+	int pointSubType;
+	
+	TREPrimOverview(uint8_t type, uint8_t maxLevel);
+	TREPrimOverview(uint8_t type, uint8_t maxLevel, uint8_t pointSubType);
+};
+
 class TREFile {
 public:
 	
 	string filePath;
 	string fileName;
+	string fileBaseName;
+	string fileExt;
 	string fileDir;
 	
 	uint8_t* data;
@@ -90,11 +93,24 @@ public:
 	vector<TRESubdivision*> subdivisions;
 	
 	
-	
+	vector<TREPrimOverview*> polylineOverview; 
+	vector<TREPrimOverview*> polygonOverview; 
+	vector<TREPrimOverview*> pointOverview; 
 	
 	
 	uint16_t headerLen;
 	
 	void LoadPath(string* path);
+	void ParseBuffer(uint8_t* buff, size_t blen);
 	
 };
+
+
+
+
+
+
+
+
+
+
