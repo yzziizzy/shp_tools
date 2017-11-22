@@ -16,8 +16,8 @@ public:
 	bool isSigned;
 	
 	void read24(uint8_t* data);
-	void readN(uint8_t* data, int offsetBits, int dataBits, bool isSigned);
-	void fromN(uint32_t raw, int offsetBits, int dataBits, bool isSigned);
+	void readN(uint8_t* data, int offsetBits, int dataBits, bool isSigned = false);
+	void fromN(uint32_t raw, int offsetBits, int dataBits, bool isSigned = false);
 };
 
 

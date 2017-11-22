@@ -6,6 +6,7 @@
 #include <map>
 #include <stdio.h>
 #include <string.h>
+#include <regex>
 #include <libgen.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -25,6 +26,8 @@
 
 void RGNFile::LoadPath(string* path) {
 	
+	static regex r("^(.*)\\.([^.]*)$");
+	
 	// messy file path string stuff
 	char* rp = realpath(path->c_str(), NULL);
 	filePath.assign(rp);
@@ -40,7 +43,15 @@ void RGNFile::LoadPath(string* path) {
 		fileExt = m[2];
 	}
 	
-	raw = readFile(filePath.c_str(), &rawLen);
+	size_t rawLen;
+	uint8_t* raw = readFile(filePath.c_str(), &rawLen);
+	
+	// try to find the TRE file first
+	
+	tre = new TREFile();
+	string tp = fileDir + "/" + fileBaseName + ".TRE"; 
+	cout << "Attempting to parse TRE file first: " << tp << endl;
+	tre->LoadPath(&tp);
 	
 	ParseBuffer(raw, rawLen);
 	
@@ -50,42 +61,77 @@ void RGNFile::LoadPath(string* path) {
 
 void RGNFile::ParseBuffer(uint8_t* raw, size_t rawLen) {
 	
-	data = read32u(raw + 0x15);
+	data = raw + read32u(raw + 0x15);
 	dataLen = read32u(raw + 0x19);
 	
 	
 	vector<TRESubdivision*>::iterator it;
 	
+	int si = 0;
 	for(it = tre->subdivisions.begin(); it != tre->subdivisions.end(); it++) {
 		uint8_t* p = data + (*it)->RGNoffset;
+		TRESubdivision* sub = *it;
 		
 		RGNSegment* s = new RGNSegment();
 		s->basePtr = p;
 		
+		cout << "segment " << si++ << endl; 
+		
 		int i = 0;
 		
-		if((*it)->hasPoints) {
-			s->pointsPtr = p + read16u(p + (2 * i));
+		// ths first pointer is not stored. the first data set is located at the end of the pointers
+		if(sub->hasPoints) {
+			if(i) s->pointsPtr = p + read16u(p + (2 * i));
+			else s->pointsPtr = p + ((sub->numTypes - 1) * 2);
 			i++;
 		}
 		
-		if((*it)->hasIndexedPoints) {
-			s->indexedPointsPtr = p + read16u(p + (2 * i));
+		if(sub->hasIndexedPoints) {
+			if(i) s->indexedPointsPtr = p + read16u(p + (2 * i));
+			else s->indexedPointsPtr = p + ((sub->numTypes - 1) * 2);
 			i++;
 		}
 		
-		if((*it)->polylinesPtr) {
-			s->polylinesPtr = p + read16u(p + (2 * i));
+		if(sub->hasPolylines) {
+			if(i) s->polylinesPtr = p + read16u(p + (2 * i));
+			else s->polylinesPtr = p + ((sub->numTypes - 1)* 2);
 			i++;
 		}
 		
-		if((*it)->polygonsPtr) {
-			s->polygonsPtr = p + read16u(p + (2 * i));
+		if(sub->hasPolygons) {
+			if(i) s->polygonsPtr = p + read16u(p + (2 * i));
+			else s->polygonsPtr = p + ((sub->numTypes - 1) * 2);
 			i++;
 		}
 		
 		
+		p += 2 * i;
 		
+		Bitstream b;
+		
+		if(sub->hasPolylines) {
+			b.Init(s->polylinesPtr);
+			
+			int type = b.ReadN(6);
+			bool direction = b.ReadN(1);
+			bool twoByteLen = b.ReadN(1);
+			
+			// skip label info for now
+			uint32_t LBLoffset = b.Read(22);
+			bool extraBit = b.Read(1);
+			bool dataInNET = b.Read(1);
+			
+			uint16_t lonDelta = b.ReadN(16); 
+			uint16_t latDelta = b.ReadN(16); 
+			
+			int streamLen = b.ReadN(twoByteLen ? 16 : 8);
+			
+			uint8_t streamInfo = b.ReadN(8);
+			
+			// the data bitstream starts now
+			
+			
+		}
 		
 		
 		

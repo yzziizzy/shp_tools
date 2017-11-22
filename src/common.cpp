@@ -54,11 +54,11 @@ void MapCoord::read24(uint8_t* data) {
 }
 
 // BUG: this function, probably
-void MapCoord::readN(uint8_t* data, int offsetBits, int dataBits, bool isSigned = false) {
+void MapCoord::readN(uint8_t* data, int offsetBits, int dataBits, bool isSigned) {
 	fromN(*((uint32_t*)data), offsetBits, dataBits, isSigned);
 }
 	
-void MapCoord::fromN(uint32_t raw, int offsetBits, int dataBits, bool isSigned = false) {
+void MapCoord::fromN(uint32_t raw, int offsetBits, int dataBits, bool isSigned) {
 	sourceBits = dataBits;
 	this->isSigned = isSigned;
 	

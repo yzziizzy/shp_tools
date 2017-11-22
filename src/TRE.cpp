@@ -201,13 +201,19 @@ TRESubdivision::TRESubdivision(uint8_t* data, bool isLowest) {
 	hasPolylines = 0x04 & data[3];
 	hasPolygons = 0x08 & data[3];
 	
+	numTypes = 0;
+	if(hasPoints) numTypes++;
+	if(hasIndexedPoints) numTypes++;
+	if(hasPolylines) numTypes++;
+	if(hasPolygons) numTypes++;
+	
 	centerLon.read24(data + 4);
 	centerLat.read24(data + 7);
 	
 	terminatingFlag = *(data + 11) & (0x80); 
 	
 	// BUG: not clear if width is scaled on 15 or 16 bits; it appears to be on 16
-	uint16_t x = *((uint16_t*)(data + 10)) & 0x7fff;
+	uint32_t x = *((uint16_t*)(data + 10)) & 0x7fff;
 	width.fromN(x, 0, 16);
 	height.readN(data + 12, 0, 16);
 	

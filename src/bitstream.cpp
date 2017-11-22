@@ -1,10 +1,11 @@
 
 
+#include <iostream>
 
 #include "bitstream.h"
 
 
-
+using namespace std;
 
 
 void Bitstream::Init(uint8_t* data, int bitOffset) {

@@ -27,6 +27,7 @@ public:
 	bool hasIndexedPoints;
 	bool hasPolylines;
 	bool hasPolygons;
+	int numTypes;
 	
 	bool terminatingFlag;
 	

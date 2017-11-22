@@ -1,6 +1,7 @@
 #pragma once
 
 
+
 #include <string>
 #include <map>
 #include <vector>
@@ -27,7 +28,7 @@ public:
 	
 	MapCoord latAbs;
 	MapCoord lonAbs;
-}
+};
 
 class RGNSegment {
 public:
@@ -40,7 +41,7 @@ public:
 	
 	
 	
-}
+};
 
 
 class RGNFile {
@@ -65,6 +66,6 @@ public:
 	void LoadPath(string* path);
 	void ParseBuffer(uint8_t* raw, size_t rawLen);
 	
-}
+};
 
 

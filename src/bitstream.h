@@ -2,6 +2,8 @@
 #pragma once
 
 
+#include <cstdint>
+
 class Bitstream {
 public:
 	
@@ -16,7 +18,7 @@ public:
 	
 	uint32_t PeekN(int bits);
 	uint32_t ReadN(int bits);
-}
+};
 
 
 
