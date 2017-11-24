@@ -25,7 +25,7 @@ u8 data[] = { 0x05, 0x40, 0x07, 0x00, 0xbc, 0x01, 0x85, 0x00, 0x03, 0x57, 0x6d, 
 
 
 
-#define P(x) cout << #x ": " << x << endl
+#define P(x) cout << #x ": " << dec << (int64_t)x << endl
 #define Px(x) cout << #x ": " << hex << x << endl
 
 
@@ -35,7 +35,7 @@ int main(int argc, char* argv[]) {
 	Bitstream b;
 	
 	b.Init(data, 0);
-			
+	
 	int type = b.ReadN(6);
 	P(type);
 	int direction = b.ReadN(1);
@@ -55,21 +55,43 @@ int main(int argc, char* argv[]) {
 	P(dataInNET);
 	
 	uint16_t lonDelta = b.ReadN(16); 
-	Px(lonDelta);
+	P(lonDelta);
 	uint16_t latDelta = b.ReadN(16); 
-	
-	Px(latDelta);
+	P(latDelta);
 	
 	int streamLen = b.ReadN(twoByteLen ? 16 : 8);
+	Px(streamLen);
 	
-	P(streamLen);
 	
 	// bitstream_info byte
-	uint8_t lonBits = b.ReadN(4);
-	P(lonBits);
-	uint8_t latBits = b.ReadN(4);
-
-	P(latBits);
+	uint16_t lonBits = b.ReadN(4);
+	Px(lonBits);
+	uint16_t latBits = b.ReadN(4);
+	Px(latBits);
+	
+	bool lonSignConsistent = b.ReadN(1);
+	P(lonSignConsistent);
+	if(lonSignConsistent) {
+		bool lonSign = b.ReadN(1); // 0 = +, 1 = -
+		P(lonSign);
+	}
+	
+	bool latSignConsistent = b.ReadN(1);
+	P(latSignConsistent);
+	if(latSignConsistent) {
+		bool latSign = b.ReadN(1);
+		P(latSign);
+	}
+	
+	int lonReadBits = 2 + lonBits + !lonSignConsistent + extraBit;
+	P(lonReadBits);
+	int latReadBits = 2 + latBits + !latSignConsistent + extraBit;
+	P(latReadBits);
+	
+	int64_t lon1 = b.ReadN(lonReadBits);
+	P(lon1);
+	int64_t lat1 = b.ReadN(latReadBits);
+	P(lat1);
 	
 	return 0;
 }
