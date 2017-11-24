@@ -43,3 +43,11 @@ target_link_libraries(rgndump PUBLIC
   m
 )
 
+add_executable(polytest src/polytest.cpp  src/common.cpp src/bitstream.cpp)
+
+target_compile_options(polytest PUBLIC -std=c++11 )
+
+target_link_libraries(polytest PUBLIC
+  m
+)
+

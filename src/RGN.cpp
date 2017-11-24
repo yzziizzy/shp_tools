@@ -110,23 +110,25 @@ void RGNFile::ParseBuffer(uint8_t* raw, size_t rawLen) {
 		Bitstream b;
 		
 		if(sub->hasPolylines) {
-			b.Init(s->polylinesPtr);
+			b.Init(s->polylinesPtr, 0);
 			
 			int type = b.ReadN(6);
 			bool direction = b.ReadN(1);
 			bool twoByteLen = b.ReadN(1);
 			
 			// skip label info for now
-			uint32_t LBLoffset = b.Read(22);
-			bool extraBit = b.Read(1);
-			bool dataInNET = b.Read(1);
+			uint32_t LBLoffset = b.ReadN(22);
+			bool extraBit = b.ReadN(1);
+			bool dataInNET = b.ReadN(1);
 			
 			uint16_t lonDelta = b.ReadN(16); 
 			uint16_t latDelta = b.ReadN(16); 
 			
 			int streamLen = b.ReadN(twoByteLen ? 16 : 8);
 			
-			uint8_t streamInfo = b.ReadN(8);
+			// bitstream_info byte
+			uint8_t lonBits = b.ReadN(4);
+			uint8_t latBits = b.ReadN(4);
 			
 			// the data bitstream starts now
 			

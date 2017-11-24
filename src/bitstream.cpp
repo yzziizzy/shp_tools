@@ -1,5 +1,6 @@
 
 
+#include <bitset>
 #include <iostream>
 
 #include "bitstream.h"
@@ -23,6 +24,8 @@ void Bitstream::Seek(int bits) {
 }
 
 
+#define PB(y ,x, n) cout << #y ": " << bitset<n>(x) << endl
+
 // max 32
 uint32_t Bitstream::PeekN(int bits) {
 	if(bits > 32) {
@@ -31,14 +34,20 @@ uint32_t Bitstream::PeekN(int bits) {
 	}
 	
 	int ob = (totalCursorBits % 8) + baseOffsetBits;
-	
+	cout << "ob: " << ob << " tCb: " << totalCursorBits << endl;
 	uint64_t raw = *((uint64_t*)cursor);
 	
-	raw <<= ((63 - bits) + ob); // max offset it 8 bits, for now; max data len is 24 per file limits
+	PB(1, raw, 64);
+
+	raw >>= (ob); // max offset it 8 bits, for now; max data len is 24 per file limits
+	PB(2, raw, 64);
 	
+	raw <<= ((64 - bits)); // max offset it 8 bits, for now; max data len is 24 per file limits
+	PB(3, raw, 64);
 	// move data to the right
-	raw >>= (63 - bits) + ob;
-	
+	// move data to the right
+	raw >>= (64 - bits);
+	PB(4, raw, 64);
 	return raw;
 }
 
