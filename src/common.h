@@ -51,5 +51,9 @@ static inline double coordFrom24(int32_t i) {
 	return (double)i * (360.0 / (double)(1 << 24));
 } 
 
+static inline double coordFromN(int32_t i, int bits) {
+	return (double)i * (360.0 / (double)(1 << bits));
+} 
+
 
 

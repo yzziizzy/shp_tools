@@ -75,12 +75,16 @@ void RGNFile::ParseBuffer(uint8_t* raw, size_t rawLen) {
 		
 		RGNSegment* s = new RGNSegment();
 		s->basePtr = p;
-		
+		cout << "rgnOffset: 0x" << hex << (uint64_t)(*it)->RGNoffset << dec << endl;  
+		if(si > 200) return;
 		cout << "segment " << si++ << " ["; 
 		
 		int i = 0;
 		
 		uint8_t** lastEnd = NULL;
+		
+		// all coordinates need to be adjusted with this
+		int levelShift = 24 - sub->level->bitsPerCoord;
 		
 		// ths first pointer is not stored. the first data set is located at the end of the pointers
 		if(sub->hasPoints) {
@@ -186,16 +190,39 @@ void RGNFile::ParseBuffer(uint8_t* raw, size_t rawLen) {
 			int latReadBits = 2 + latBits + !latSignConsistent + extraBit;
 			
 			
+			
 			// actual primitive data here
+			int64_t lastLon = 0;
+			int64_t lastLat = 0;
+			
 			int j = 0;
 			while(b.Tell() < s->polylinesEndPtr + (int64_t)ceil((float)(lonReadBits + latReadBits) / 8.0)) {
 				int64_t lon1 = b.ReadN(lonReadBits);
 				int64_t lat1 = b.ReadN(latReadBits);
 				
+				int64_t lon = (lon1 + lastLon + lonDelta) << levelShift; 
+				int64_t lat = (lat1 + lastLat + latDelta) << levelShift; 
+				
+				double dlon = coordFromN(lon, sub->level->bitsPerCoord);
+				double dlat = coordFromN(lat, sub->level->bitsPerCoord);
+				
+				dlon += sub->centerLon.d;
+				dlat += sub->centerLat.d;
+		
+				
+				cout << dec;
+				cout << "lat/lon: [" << lat << ", " << lon << "]  ";
+				cout << "(" << dlat << ", " << dlon << ")" << endl;
+				
+				
+				lastLon = lon1;
+				lastLat = lat1;
+				
 				j++;
 			}
 			
 			cout << "  " << j << " polyline nodes found\n";
+			
 		}
 		
 		

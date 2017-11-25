@@ -20,6 +20,7 @@ public:
 
 class TRESubdivision {
 public:
+	TREMapLevel* level;
 	
 	size_t RGNoffset;
 	

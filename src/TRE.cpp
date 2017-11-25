@@ -108,6 +108,7 @@ void TREFile::ParseBuffer(uint8_t* raw, size_t rawLen) {
 	
 	int subsCount = 0;
 	int subsBeforeLowest = 0;
+	int lowestLevelIndex = 999999;
 	
 	// parse map levels
 	uint8_t* p = mapLevelsPtr;
@@ -120,6 +121,7 @@ void TREFile::ParseBuffer(uint8_t* raw, size_t rawLen) {
 		
 		subsCount += ml->subdivisions;
 		if(ml->zoomLevel > 0) subsBeforeLowest += ml->subdivisions;
+		lowestLevelIndex = lowestLevelIndex > ml->zoomLevel ? ml->zoomLevel : lowestLevelIndex;
 		
 		cout << "Map Level " << ml->zoomLevel << ": \n  bitsPerCoord: " << ml->bitsPerCoord
 			<< "\n  subdivisions: " << ml->subdivisions << endl;  
@@ -131,32 +133,40 @@ void TREFile::ParseBuffer(uint8_t* raw, size_t rawLen) {
 	
 	cout << "\n\n";
 	
+	bool prelow = false;
+	
+	 
 	// parse subdivisions
 	p = subdivisionsPtr;
-	//cout << "subs before lowest: " << subsBeforeLowest << endl;
-	
-	for(int i = 0; i < subsCount; i++) {
-		bool onLowest = i > subsBeforeLowest;
-		TRESubdivision* sd = new TRESubdivision(p, onLowest);
-		
-		subdivisions.push_back(sd);
-		
-// 		if(i < 2) {
-// 			
-// 		cout << "Subdivision " << i << ":\n  dims: " << sd->width.n << " x " << sd->height.n << endl;
-// 		cout << "  RGN offset: " << sd->RGNoffset << endl; 
-// 		cout << "  terminating: " << sd->terminatingFlag << endl;
-// 				cout << "   RGN offset: " << bitset<24>(*((uint32_t*)(p+0))) << endl;
-// 				cout << "   flags: " << bitset<8>(*((uint32_t*)(p+3))) << endl;
-// 				cout << "   lon: " << bitset<24>(*((uint32_t*)(p+4))) << endl;
-// 				cout << "   lat: " << bitset<24>(*((uint32_t*)(p+7))) << endl;
-// 				cout << "   w: " << bitset<16>(*((uint16_t*)(p+10))) << endl;
-// 				cout << "   h: " << bitset<16>(*((uint16_t*)(p+12))) << endl;
-// 		}
-//		else break;
-		p += (onLowest ? 14 : 16);
+
+	vector<TREMapLevel*>::iterator lvlit;
+	for(lvlit = mapLevels.begin(); lvlit != mapLevels.end(); lvlit++) {
+		for(int i = 0; i < (*lvlit)->subdivisions; i++) {
+
+			bool onLowest = subdivisions.size() > subsBeforeLowest;
+			
+			TRESubdivision* sd = new TRESubdivision(p, onLowest);
+ 			sd->level = *lvlit;
+			
+			subdivisions.push_back(sd);
+			
+			if(subdivisions.size() < 6) {
+				
+			cout << "Subdivision " << i << ":\n  dims: " << sd->width.n << " x " << sd->height.n << endl;
+			cout << "  RGN offset: " << sd->RGNoffset << endl; 
+			cout << "  terminating: " << sd->terminatingFlag << endl;
+					cout << "   RGN offset: " << bitset<24>(*((uint32_t*)(p+0))) << endl;
+					cout << "   flags: " << bitset<8>(*((uint32_t*)(p+3))) << endl;
+					cout << "   lon: " << bitset<24>(*((uint32_t*)(p+4))) << endl;
+					cout << "   lat: " << bitset<24>(*((uint32_t*)(p+7))) << endl;
+					cout << "   w: " << bitset<16>(*((uint16_t*)(p+10))) << endl;
+					cout << "   h: " << bitset<16>(*((uint16_t*)(p+12))) << endl;
+			}
+			
+			p += (onLowest ? 14 : 16);
+		}
 	}
-	
+
 	
 	p = polylineOverviewPtr;
 	while(p < polylineOverviewPtr + polylineOverviewLen) {
