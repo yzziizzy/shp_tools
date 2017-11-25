@@ -35,9 +35,13 @@ public:
 	
 	uint8_t* basePtr;
 	uint8_t* pointsPtr;
+	uint8_t* pointsEndPtr; // end pointers point to the last byte of the region.
 	uint8_t* indexedPointsPtr;
+	uint8_t* indexedPointsEndPtr;
 	uint8_t* polylinesPtr;
+	uint8_t* polylinesEndPtr;
 	uint8_t* polygonsPtr;
+	uint8_t* polygonsEndPtr;
 	
 	
 	

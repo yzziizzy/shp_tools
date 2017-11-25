@@ -24,7 +24,8 @@ void Bitstream::Seek(int bits) {
 }
 
 
-#define PB(y ,x, n) cout << #y ": " << bitset<n>(x) << endl
+//#define PB(y ,x, n) cout << #y ": " << bitset<n>(x) << endl
+#define PB(y ,x, n)
 
 // max 32
 uint32_t Bitstream::PeekN(int bits) {
@@ -34,7 +35,6 @@ uint32_t Bitstream::PeekN(int bits) {
 	}
 	
 	int ob = (totalCursorBits % 8) + baseOffsetBits;
-	cout << "ob: " << ob << " tCb: " << totalCursorBits << endl;
 	uint64_t raw = *((uint64_t*)cursor);
 	
 	PB(1, raw, 64);
@@ -60,4 +60,6 @@ uint32_t Bitstream::ReadN(int bits) {
 
 
 
-
+uint8_t* Bitstream::Tell() {
+	return cursor;
+}

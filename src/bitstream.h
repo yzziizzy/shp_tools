@@ -18,6 +18,8 @@ public:
 	
 	uint32_t PeekN(int bits);
 	uint32_t ReadN(int bits);
+	
+	uint8_t* Tell();
 };
 
 

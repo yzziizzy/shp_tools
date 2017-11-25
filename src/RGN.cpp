@@ -10,6 +10,7 @@
 #include <libgen.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <math.h>
 
 #include "common.h"
 #include "bitstream.h"
@@ -75,33 +76,70 @@ void RGNFile::ParseBuffer(uint8_t* raw, size_t rawLen) {
 		RGNSegment* s = new RGNSegment();
 		s->basePtr = p;
 		
-		cout << "segment " << si++ << endl; 
+		cout << "segment " << si++ << " ["; 
 		
 		int i = 0;
+		
+		uint8_t** lastEnd = NULL;
 		
 		// ths first pointer is not stored. the first data set is located at the end of the pointers
 		if(sub->hasPoints) {
 			if(i) s->pointsPtr = p + read16u(p + (2 * i));
 			else s->pointsPtr = p + ((sub->numTypes - 1) * 2);
 			i++;
+			
+			lastEnd = &s->pointsEndPtr;
+			
+			cout << "points ";
 		}
 		
 		if(sub->hasIndexedPoints) {
 			if(i) s->indexedPointsPtr = p + read16u(p + (2 * i));
 			else s->indexedPointsPtr = p + ((sub->numTypes - 1) * 2);
 			i++;
+			
+			if(lastEnd) *lastEnd = s->indexedPointsPtr - 1;
+			lastEnd = &s->indexedPointsEndPtr;
+			
+			cout << "indexedPoints ";
 		}
 		
 		if(sub->hasPolylines) {
 			if(i) s->polylinesPtr = p + read16u(p + (2 * i));
 			else s->polylinesPtr = p + ((sub->numTypes - 1)* 2);
 			i++;
+			
+			if(lastEnd) *lastEnd = s->polylinesPtr - 1;
+			lastEnd = &s->polylinesEndPtr;
+			
+			cout << "polylines ";
 		}
 		
 		if(sub->hasPolygons) {
 			if(i) s->polygonsPtr = p + read16u(p + (2 * i));
 			else s->polygonsPtr = p + ((sub->numTypes - 1) * 2);
 			i++;
+			
+			if(lastEnd) *lastEnd = s->polygonsPtr - 1;
+			lastEnd = &s->polygonsEndPtr;
+			
+			cout << "polygons";
+		}
+		
+		cout << "]\n";
+		
+		// nothing more to do
+		if(i == 0) continue;
+		
+		// the last segment ends where the next begins
+		if(lastEnd) {
+			// BUG: check that this logic is right
+			if(*(it + 1)) {
+				*lastEnd = data + (*(it + 1))->RGNoffset - 1;
+			}
+			else {
+				*lastEnd = raw + rawLen - 1;
+			}
 		}
 		
 		
@@ -113,26 +151,51 @@ void RGNFile::ParseBuffer(uint8_t* raw, size_t rawLen) {
 			b.Init(s->polylinesPtr, 0);
 			
 			int type = b.ReadN(6);
-			bool direction = b.ReadN(1);
-			bool twoByteLen = b.ReadN(1);
+			int direction = b.ReadN(1);
+			int twoByteLen = b.ReadN(1);
+
+			
 			
 			// skip label info for now
 			uint32_t LBLoffset = b.ReadN(22);
 			bool extraBit = b.ReadN(1);
 			bool dataInNET = b.ReadN(1);
 			
+			
 			uint16_t lonDelta = b.ReadN(16); 
 			uint16_t latDelta = b.ReadN(16); 
 			
 			int streamLen = b.ReadN(twoByteLen ? 16 : 8);
 			
+			
 			// bitstream_info byte
-			uint8_t lonBits = b.ReadN(4);
-			uint8_t latBits = b.ReadN(4);
+			uint16_t lonBits = b.ReadN(4);
+			uint16_t latBits = b.ReadN(4);
 			
-			// the data bitstream starts now
+			bool lonSignConsistent = b.ReadN(1);
+			if(lonSignConsistent) {
+				bool lonSign = b.ReadN(1); // 0 = +, 1 = -
+			}
+			
+			bool latSignConsistent = b.ReadN(1);
+			if(latSignConsistent) {
+				bool latSign = b.ReadN(1);
+			}
+			
+			int lonReadBits = 2 + lonBits + !lonSignConsistent + extraBit;
+			int latReadBits = 2 + latBits + !latSignConsistent + extraBit;
 			
 			
+			// actual primitive data here
+			int j = 0;
+			while(b.Tell() < s->polylinesEndPtr + (int64_t)ceil((float)(lonReadBits + latReadBits) / 8.0)) {
+				int64_t lon1 = b.ReadN(lonReadBits);
+				int64_t lat1 = b.ReadN(latReadBits);
+				
+				j++;
+			}
+			
+			cout << "  " << j << " polyline nodes found\n";
 		}
 		
 		
