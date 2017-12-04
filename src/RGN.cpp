@@ -208,7 +208,6 @@ void RGNFile::ParseBuffer(uint8_t* raw, size_t rawLen) {
 				
 				dlon += sub->centerLon.d;
 				dlat += sub->centerLat.d;
-		
 				
 				cout << dec;
 				cout << "lat/lon: [" << lat << ", " << lon << "]  ";

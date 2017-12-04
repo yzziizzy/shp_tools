@@ -4,38 +4,11 @@
 #include <regex>
 
 
+#include "shp.h"
+
+
 // yup. don't care. fuck off.
 using namespace std;
-
-
-
-
-class SHPSection {
-	int32_t number;
-	size_t offset;
-	size_t length; // in bytes not words
-	
-	int32_t shapeType;
-	
-};
-
-class SHPInfo {
-public:
-	string name;
-	string path;
-	
-	// read from header
-	int64_t fileLength; // in bytes, not words 
-	int32_t version;
-	int32_t shapeType;
-	
-	
-	size_t dataLen;
-	unsigned char* data;
-	
-	struct { double x,y,z,m; } min, max;
-	
-};
 
 
 

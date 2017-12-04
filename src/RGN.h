@@ -12,6 +12,16 @@
 
 using namespace std;
 
+class RGNElementGroup {
+public:
+	int polyType;
+	bool has2ByteLen;
+	bool direction;
+	size_t streamLen;
+	
+	
+}
+
 class RGNPolylineSegment {
 public:
 	
